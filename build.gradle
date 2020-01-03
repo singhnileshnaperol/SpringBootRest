@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version '2.2.2.RELEASE'
     id 'io.spring.dependency-management' version '1.0.8.RELEASE'
     id 'java'
+    id "fi.evident.beanstalk" version "0.2.22"
 }
 
 group = 'com.example'
@@ -14,6 +15,7 @@ repositories {
 
 apply plugin: 'java'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'fi.evident.beanstalk'
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -28,4 +30,36 @@ bootJar {
 
 test {
     useJUnitPlatform()
+}
+
+beanstalk {
+    //profile = 'my-profile' // Only required if using .aws/credentials
+    s3Endpoint = ${getProjectProperty('s3Endpoint.url')}
+    beanstalkEndpoint = ${getProjectProperty('beanstalkEndpoint.url')}
+
+    deployments {
+        // Example to deploy to the same env
+        staging {
+            file = tasks.bootJar
+            application = 'my-app'
+            environment = 'my-app-staging'
+        }
+        // Example to create a new env for each version (to use URL swapping for blue/green deployment)
+        production {
+            file = tasks.bootJar
+            application = 'my-app'
+            environment = "my-app-${project.version.replaceAll('\\.', '-')}"
+            template = 'default' // Saved configuration name to use to create each env
+        }
+    }
+}
+
+def String getProjectProperty(String propertyName)
+{
+    String projectProperty = "null"
+    if (hasProperty(propertyName))
+    {
+        projectProperty = this.properties[propertyName]
+    }
+    return projectProperty
 }
