@@ -25,7 +25,7 @@ dependencies {
 }
 
 bootJar {
-    mainClassName = 'com.example.gradlebuild.GradlebuildApplication'
+    mainClassName = 'com.example.gradlebuild.mainapp.GradlebuildApplication'
 }
 
 test {
